@@ -1,5 +1,5 @@
 # Contrôles du plugin : syntaxe PHP, règles de code Moodle (moodle-cs), cohérence des fichiers de langue.
-# Lancé à chaque push et pull request, et appelé par le workflow de release avant de publier.
+# Lancé à chaque push et pull request, à la main (Run workflow), et appelé par le workflow de release avant de publier.
 name: CI
 
 on:
@@ -7,6 +7,8 @@ on:
     branches: ['**']
   pull_request:
   workflow_call:
+  # Lancement à la main : Actions > CI > Run workflow.
+  workflow_dispatch:
 
 permissions:
   contents: read
