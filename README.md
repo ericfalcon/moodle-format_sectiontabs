@@ -8,7 +8,7 @@ dans l'esprit du format « une section par onglet ».
 
 - La barre est construite automatiquement à partir des sections : rien à mettre à jour quand on ajoute,
   renomme, déplace ou masque une section.
-- L'onglet de la section affichée est mis en évidence, avec une couleur réglable pour le site et pour chaque cours.
+- L'onglet de la section affichée prend la couleur principale du thème (avec Épure : sa couleur de marque), modifiable pour tout le site et pour chaque cours.
 - Les restrictions d'accès (groupe, date, achèvement…) sont respectées : une section ou sous-section restreinte « masquée complètement » n'apparaît pas pour les étudiants concernés ; restreinte « affichée grisée », son onglet est grisé.
 - Les étudiants ne voient jamais les sections ni les sous-sections cachées, même si le cours affiche les sections cachées comme « non disponibles ». Les enseignants les voient en grisé.
 - Un menu vertical des sections peut aussi s'afficher à gauche du contenu.
@@ -38,7 +38,7 @@ Dans *Paramètres du cours → Format de cours*, choisir **Onglets et menu de se
 | Menu des sections à gauche | Affiche aussi la liste des sections à gauche du contenu (masquée sur téléphone). Activé par défaut. |
 | Sous-sections en onglets | Sur la page d'une section, les sous-sections s'affichent en onglets, une seule à la fois. En mode édition, un onglet « Tout afficher » permet de les voir toutes pour les déplacer. Activé par défaut. |
 | Boutons Précédent / Suivant | En bas de chaque section : sous-section précédente / suivante tant qu'il en reste, puis section précédente / suivante (les sections inaccessibles sont sautées). Remplace les liens de navigation entre sections de Moodle. Activé par défaut. |
-| Couleur de l'onglet actif / de son soulignement | Code hexadécimal (ex. `#ecb21e`). Vide : couleur définie par l'administrateur pour tout le site. |
+| Couleur de l'onglet actif / de son soulignement | Code hexadécimal (ex. `#2559a8`). Vide : couleur définie pour le site, sinon couleur du thème. |
 | Noms d'onglets courts | « Bloc de compétence 1 : Actes essentiels » devient « Bloc de compétence 1 ». Le nom complet s'affiche au survol. |
 
 Les sections et les activités sont conservées lors du changement de format.
@@ -72,6 +72,22 @@ toutes les sections.
 L'apparence est définie dans `styles.css` (classes `.gtabs`, `.gtabs-tab`, `.gtabs-active`).
 Le gabarit de la barre est `templates/local/tabs.mustache` et peut être surchargé par un thème
 (`theme/MONTHEME/templates/format_sectiontabs/local/tabs.mustache`).
+
+## Couleurs
+
+La couleur de l'onglet actif est choisie dans cet ordre :
+
+1. la couleur définie dans les paramètres du **cours** ;
+2. sinon, celle définie pour **tout le site** (*Administration du site → Plugins → Formats de cours → Onglets et menu
+   de sections*) ;
+3. sinon, la **couleur du thème** :
+   - avec **Épure**, sa couleur de marque et la couleur de texte lisible dessus (`--epure-brand`, `--epure-on-brand`),
+     qui suivent son mode sombre, les préférences d'affichage de l'utilisateur et les couleurs des entreprises (IOMAD) ;
+   - avec un autre thème (Boost, Moove, Classic…), son réglage « couleur principale » (`brandcolor`), sinon le bleu
+     de Moodle `#0f6cbf` ; la couleur du texte est alors choisie automatiquement pour rester lisible.
+
+Le soulignement de l'onglet actif est, par défaut, la couleur de l'onglet assombrie. Avec Épure, les onglets reprennent
+aussi ses arrondis, ses bordures et sa couleur de focus.
 
 ## Accessibilité
 

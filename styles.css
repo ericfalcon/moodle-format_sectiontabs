@@ -1,8 +1,22 @@
 /* Format "Onglets et menu de sections" (format_sectiontabs).
- * Les couleurs neutres utilisent les variables de Bootstrap (--bs-*) : elles suivent le mode clair ou sombre du thème.
- * Les couleurs de l'onglet actif viennent des propriétés --gtabs-active, --gtabs-active-text
- * (choisie automatiquement pour un contraste suffisant) et --gtabs-active-border.
+ *
+ * Couleur de l'onglet actif, par ordre de priorité :
+ * 1. couleur choisie dans le cours ou pour le site (--gtabs-active, --gtabs-active-text, --gtabs-active-border) ;
+ * 2. avec le thème Épure, sa couleur de marque et le texte lisible dessus (--epure-brand, --epure-on-brand), qui
+ *    suivent son mode sombre, ses préférences d'affichage et les couleurs des entreprises ;
+ * 3. sinon, la couleur principale du thème (--gtabs-theme, --gtabs-theme-text, calculées à partir de "brandcolor").
+ * Soulignement : la couleur choisie, sinon la couleur de l'onglet actif assombrie.
+ * Les couleurs neutres utilisent les variables d'Épure (--epure-*) puis de Bootstrap (--bs-*) : elles suivent le mode
+ * clair ou sombre du thème.
  */
+.gtabs,
+.gtabs-layout,
+.gsubtabs,
+.gnav {
+    --gtabs-fill: var(--gtabs-active, var(--epure-brand, var(--gtabs-theme, #0f6cbf)));
+    --gtabs-on: var(--gtabs-active-text, var(--epure-on-brand, var(--gtabs-theme-text, #fff)));
+    --gtabs-line: var(--gtabs-active-border, color-mix(in srgb, var(--gtabs-fill) 60%, #000));
+}
 
 /* Texte lu par les lecteurs d'écran seulement (identique de Moodle 4.5 à 5.x, quelle que soit la version de Bootstrap). */
 .gtabs-sr {
@@ -21,7 +35,7 @@
 .gtabs {
     background-color: var(--bs-body-bg, #fff);
     border: 1px solid var(--bs-border-color-translucent, transparent);
-    border-radius: 12px;
+    border-radius: var(--epure-radius-lg, 12px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
     padding: 12px;
     margin: 0 0 1.5rem 0;
@@ -47,7 +61,7 @@
     background-color: var(--bs-tertiary-bg, #f3f1f0);
     color: var(--bs-body-color, #3b2f2f);
     border: 1px solid var(--bs-border-color, #e4e0de);
-    border-radius: 10px;
+    border-radius: var(--epure-radius, 10px);
     font-weight: 700;
     text-decoration: none;
     transition: background-color .15s ease-in-out;
@@ -63,10 +77,11 @@
 .gtabs .gtabs-tab.gtabs-active,
 .gtabs a.gtabs-tab.gtabs-active:hover,
 .gtabs a.gtabs-tab.gtabs-active:focus {
-    background-color: var(--gtabs-active, #ecb21e);
-    border-color: var(--gtabs-active, #ecb21e);
-    border-bottom: 3px solid var(--gtabs-active-border, #2b1a10);
-    color: var(--gtabs-active-text, #1d2125);
+    background-color: var(--gtabs-fill);
+    border-color: var(--gtabs-fill);
+    border-bottom: 3px solid var(--gtabs-line);
+    /* !important : en mode sombre, Épure colore tous les liens avec une règle plus prioritaire. */
+    color: var(--gtabs-on) !important;
 }
 
 /* Menu vertical des sections, à gauche du contenu. */
@@ -115,7 +130,7 @@
     font-weight: 700;
     border-color: var(--bs-border-color, #dee2e6);
     border-right-color: var(--bs-body-bg, #fff);
-    border-left: 4px solid var(--gtabs-active, #ecb21e);
+    border-left: 4px solid var(--gtabs-fill);
     background-color: var(--bs-body-bg, #fff);
 }
 
@@ -151,8 +166,9 @@
 .gsubtabs .gsubtabs-tab.gsubtabs-active,
 .gsubtabs a.gsubtabs-tab.gsubtabs-active:hover,
 .gsubtabs a.gsubtabs-tab.gsubtabs-active:focus {
-    background-color: var(--gtabs-active, #ecb21e);
-    color: var(--gtabs-active-text, #1d2125);
+    background-color: var(--gtabs-fill);
+    /* !important : en mode sombre, Épure colore tous les liens avec une règle plus prioritaire. */
+    color: var(--gtabs-on) !important;
 }
 
 .gsubtabs .gsubtabs-all {
@@ -188,15 +204,16 @@
 .gtabs .gtabs-tab.gtabs-active.gtabs-unavailable,
 .gsubtabs .gsubtabs-tab.gsubtabs-active.gtabs-hidden,
 .gsubtabs .gsubtabs-tab.gsubtabs-active.gsubtabs-unavailable {
-    background-color: var(--gtabs-active, #ecb21e);
-    color: var(--gtabs-active-text, #1d2125);
+    background-color: var(--gtabs-fill);
+    /* !important : en mode sombre, Épure colore tous les liens avec une règle plus prioritaire. */
+    color: var(--gtabs-on) !important;
 }
 
 /* Focus clavier bien visible. */
 .gtabs a.gtabs-tab:focus-visible,
 .gtabs-side a.gtabs-side-link:focus-visible,
 .gsubtabs a.gsubtabs-tab:focus-visible {
-    outline: 3px solid var(--bs-link-color, #0f6cbf);
+    outline: 3px solid var(--epure-focus, var(--bs-link-color, #0f6cbf));
     outline-offset: 2px;
     box-shadow: 0 0 0 5px var(--bs-body-bg, #fff);
 }
@@ -244,7 +261,7 @@
     min-width: 0;
     padding: .6rem 1rem;
     border: 1px solid var(--bs-border-color, #e4e0de);
-    border-radius: 10px;
+    border-radius: var(--epure-radius, 10px);
     background-color: var(--bs-tertiary-bg, #f3f1f0);
     color: var(--bs-body-color, #3b2f2f);
     text-decoration: none;
@@ -257,9 +274,10 @@
 
 .gnav a.gnav-link:hover,
 .gnav a.gnav-link:focus {
-    background-color: var(--gtabs-active, #ecb21e);
-    border-color: var(--gtabs-active, #ecb21e);
-    color: var(--gtabs-active-text, #1d2125);
+    background-color: var(--gtabs-fill);
+    border-color: var(--gtabs-fill);
+    /* !important : en mode sombre, Épure colore tous les liens avec une règle plus prioritaire. */
+    color: var(--gtabs-on) !important;
     text-decoration: none;
 }
 
@@ -275,7 +293,7 @@
 }
 
 .gnav a.gnav-link:focus-visible {
-    outline: 3px solid var(--bs-link-color, #0f6cbf);
+    outline: 3px solid var(--epure-focus, var(--bs-link-color, #0f6cbf));
     outline-offset: 2px;
     box-shadow: 0 0 0 5px var(--bs-body-bg, #fff);
 }

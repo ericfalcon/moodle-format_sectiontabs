@@ -1,5 +1,16 @@
 # Historique des versions
 
+## 1.2 (stable) — 26 novembre 2026
+
+- **Couleur de l'onglet actif reprise du thème par défaut**, toujours modifiable pour le site et pour chaque cours.
+  Avec le thème **Épure**, les onglets prennent sa couleur de marque (et le texte lisible associé), en suivant son mode
+  sombre, ses préférences d'affichage et les couleurs des entreprises ; ils reprennent aussi ses arrondis, bordures et
+  couleur de focus. Avec un autre thème : sa couleur principale (`brandcolor`).
+- Soulignement de l'onglet actif : par défaut, la couleur de l'onglet assombrie.
+- Mise à niveau : les anciennes couleurs par défaut (jaune `#ecb21e`, soulignement `#2b1a10`), si elles n'avaient pas
+  été modifiées, laissent la place aux couleurs du thème.
+- Contrôles de visibilité renforcés pour les boutons Précédent / Suivant et les sous-onglets.
+
 ## 1.1 (stable) — 18 novembre 2026
 
 - **Compatible de Moodle 4.5 à Moodle 5.3** (testé sur 4.5.16+ et 5.3.1 avec un cours réel de 9 sections et
