@@ -44,3 +44,4 @@ jobs:
 
       - name: Version et fichiers de langue
         run: php .github/scripts/check.php
+
