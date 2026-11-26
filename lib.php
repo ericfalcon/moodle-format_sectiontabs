@@ -81,6 +81,14 @@ class format_sectiontabs extends format_topics {
             'default' => 1,
             'type' => PARAM_BOOL,
         ];
+        $options['gtabsresume'] = [
+            'default' => 1,
+            'type' => PARAM_BOOL,
+        ];
+        $options['gtabsprogress'] = [
+            'default' => 1,
+            'type' => PARAM_BOOL,
+        ];
         $options['gtabsnav'] = [
             'default' => 1,
             'type' => PARAM_BOOL,
@@ -130,6 +138,18 @@ class format_sectiontabs extends format_topics {
             $options['gtabssubtabs'] += [
                 'label' => new lang_string('gtabssubtabs', 'format_sectiontabs'),
                 'help' => 'gtabssubtabs',
+                'help_component' => 'format_sectiontabs',
+                'element_type' => 'advcheckbox',
+            ];
+            $options['gtabsresume'] += [
+                'label' => new lang_string('gtabsresume', 'format_sectiontabs'),
+                'help' => 'gtabsresume',
+                'help_component' => 'format_sectiontabs',
+                'element_type' => 'advcheckbox',
+            ];
+            $options['gtabsprogress'] += [
+                'label' => new lang_string('gtabsprogress', 'format_sectiontabs'),
+                'help' => 'gtabsprogress',
                 'help_component' => 'format_sectiontabs',
                 'element_type' => 'advcheckbox',
             ];
@@ -239,6 +259,21 @@ class format_sectiontabs extends format_topics {
             html_writer::div(get_string('customtabs_intro', 'format_sectiontabs'), 'alert alert-info mb-0')
         );
         $mform->hideIf('gtabsintro', 'gtabsmode', 'neq', self::TABS_CUSTOM);
+
+        // Sections that no saved tab opens: reachable only from the section menu.
+        if ($orphans = $this->get_sections_without_tab()) {
+            $names = array_map(fn($section) => s($sectionnames[$section->id] ?? ''), $orphans);
+            $elements[] = $mform->addElement(
+                'static',
+                'gtabsorphans',
+                '',
+                html_writer::div(
+                    get_string('sectionswithouttab', 'format_sectiontabs', implode(', ', $names)),
+                    'alert alert-warning mb-0'
+                )
+            );
+            $mform->hideIf('gtabsorphans', 'gtabsmode', 'neq', self::TABS_CUSTOM);
+        }
 
         for ($i = 0; $i < $count; $i++) {
             $tab = $tabs[$i] ?? ['label' => '', 'sectionids' => [], 'url' => ''];
@@ -393,6 +428,31 @@ class format_sectiontabs extends format_topics {
     }
 
     /**
+     * Sections of the course that no custom tab opens (custom tabs only, once some are saved).
+     *
+     * @return section_info[] in course order
+     */
+    public function get_sections_without_tab(): array {
+        $tabs = $this->get_custom_tabs();
+        if (!$tabs) {
+            return [];
+        }
+        $used = [];
+        foreach ($tabs as $tab) {
+            foreach ($tab['sectionids'] as $sectionid) {
+                $used[$sectionid] = true;
+            }
+        }
+        $orphans = [];
+        foreach ($this->get_modinfo()->get_listed_section_info_all() as $section) {
+            if (empty($used[$section->id])) {
+                $orphans[] = $section;
+            }
+        }
+        return $orphans;
+    }
+
+    /**
      * Save the custom tabs of the course.
      *
      * @param array $tabs list of ['label' => string, 'sectionids' => int[], 'url' => string]
@@ -532,6 +592,22 @@ class format_sectiontabs extends format_topics {
         }
         return new moodle_url('/course/section.php', ['id' => $section->id]);
     }
+}
+
+/**
+ * User preferences the browser may set: the last subsection opened in a course (for "Resume where I left off").
+ *
+ * @return array
+ */
+function format_sectiontabs_user_preferences(): array {
+    return [
+        '/^format_sectiontabs_lastsub_\\d+$/' => [
+            'type' => PARAM_INT,
+            'null' => NULL_NOT_ALLOWED,
+            'default' => 0,
+            'isregex' => true,
+        ],
+    ];
 }
 
 /**

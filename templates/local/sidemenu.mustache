@@ -33,10 +33,10 @@
         {{#sections}}
         <li class="gtabs-side-item">
             {{#unavailable}}
-            <span class="gtabs-side-link gtabs-unavailable{{#active}} gtabs-side-active{{/active}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}>{{{fullname}}}<span class="gtabs-sr"> ({{#str}} notavailable, format_sectiontabs {{/str}})</span></span>
+            <span class="gtabs-side-link gtabs-unavailable{{#active}} gtabs-side-active{{/active}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}>{{#complete}}<span class="gtabs-check" aria-hidden="true">✓</span>{{/complete}}{{{fullname}}}{{#complete}}<span class="gtabs-sr"> ({{#str}} completed, format_sectiontabs {{/str}})</span>{{/complete}}<span class="gtabs-sr"> ({{#str}} notavailable, format_sectiontabs {{/str}})</span></span>
             {{/unavailable}}
             {{^unavailable}}
-            <a class="gtabs-side-link{{#active}} gtabs-side-active{{/active}}{{#hidden}} gtabs-hidden{{/hidden}}" href="{{url}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}>{{{fullname}}}{{#hidden}}<span class="gtabs-sr"> ({{#str}} hiddenfromstudents, format_sectiontabs {{/str}})</span>{{/hidden}}</a>
+            <a class="gtabs-side-link{{#active}} gtabs-side-active{{/active}}{{#hidden}} gtabs-hidden{{/hidden}}" href="{{url}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}>{{#complete}}<span class="gtabs-check" aria-hidden="true">✓</span>{{/complete}}{{{fullname}}}{{#complete}}<span class="gtabs-sr"> ({{#str}} completed, format_sectiontabs {{/str}})</span>{{/complete}}{{#hidden}}<span class="gtabs-sr"> ({{#str}} hiddenfromstudents, format_sectiontabs {{/str}})</span>{{/hidden}}</a>
             {{/unavailable}}
         </li>
         {{/sections}}

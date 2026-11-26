@@ -27,6 +27,8 @@ use renderer_base;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class content extends content_topics {
+    /** @var array|null completion progress by section id, computed once per page */
+    protected $progress = null;
     /**
      * Export for template.
      *
@@ -38,6 +40,8 @@ class content extends content_topics {
         $data->gtabs = $this->export_tabs();
         $data->gsubtabs = $this->export_subtabs();
         $data->gnav = $this->export_navigation();
+        $data->gresume = $this->export_resume();
+        $this->remember_section();
         if ($data->gnav) {
             // The previous / next bar replaces the core section navigation and section selector.
             unset($data->sectionnavigation, $data->sectionselector);
@@ -117,6 +121,7 @@ class content extends content_topics {
         if (!$parent || !$parent->uservisible || (!$parent->visible && !$canviewhidden)) {
             return null;
         }
+        $progress = $this->get_progress();
         $subtabs = [];
         foreach ($modinfo->sections[$sectionnum] ?? [] as $cmid) {
             $cm = $modinfo->get_cm($cmid);
@@ -138,6 +143,7 @@ class content extends content_topics {
                 // Restricted for this user but displayed with its restriction message.
                 'unavailable' => !$cm->uservisible || !$delegated->uservisible,
                 'active' => empty($subtabs),
+                'complete' => !empty($progress[$delegated->id]['complete']),
             ];
         }
         if (empty($subtabs)) {
@@ -146,6 +152,8 @@ class content extends content_topics {
         return [
             'uniqid' => \html_writer::random_id('gsubtabs'),
             'sectionid' => $parent->id,
+            'courseid' => $format->get_courseid(),
+            'resume' => $this->resume_enabled(),
             'subtabs' => $subtabs,
             'editing' => $format->show_editor(),
             'style' => $format->get_tab_style(),
@@ -168,6 +176,7 @@ class content extends content_topics {
         $current = (int)($format->get_sectionnum() ?? 0);
         $shortnames = !empty($course->gtabsshortnames);
 
+        $progress = $this->get_progress();
         // All the sections the user can see, in course order, by section id.
         $sections = [];
         foreach ($modinfo->get_listed_section_info_all() as $section) {
@@ -196,13 +205,29 @@ class content extends content_topics {
                 'active' => ((int)$section->section === $current),
                 'hidden' => !$section->visible,
                 'unavailable' => !$section->uservisible,
+                'complete' => !empty($progress[$section->id]['complete']),
+                'tracked' => !empty($progress[$section->id]['total']),
             ];
         }
 
         $customtabs = $format->get_custom_tabs();
+        $orphans = [];
         if ((int)($course->gtabsmode ?? 0) === \format_sectiontabs::TABS_CUSTOM && $customtabs) {
             $tabs = $this->export_custom_tabs($customtabs, $sections);
             $hastabs = !empty($tabs);
+            // In editing mode, the sections that no tab opens (only the section menu leads to them).
+            if ($format->show_editor(['moodle/course:update'])) {
+                foreach ($format->get_sections_without_tab() as $section) {
+                    $orphans[] = [
+                        'name' => $format->get_section_name($section),
+                        'url' => $format->get_tab_url($section)->out(false),
+                        'last' => false,
+                    ];
+                }
+                if ($orphans) {
+                    $orphans[count($orphans) - 1]['last'] = true;
+                }
+            }
         } else {
             // One tab per section (also when the custom tabs are not defined yet).
             $tabs = array_values($sections);
@@ -210,7 +235,7 @@ class content extends content_topics {
         }
         $leftmenu = !empty($course->gtabsleftmenu) && count($sections) >= 2;
 
-        if (!$hastabs && !$leftmenu) {
+        if (!$hastabs && !$leftmenu && !$orphans) {
             return null;
         }
 
@@ -218,6 +243,9 @@ class content extends content_topics {
         return [
             'tabs' => $hastabs ? $tabs : [],
             'hastabs' => $hastabs,
+            'orphans' => $orphans,
+            'hasorphans' => !empty($orphans),
+            'settingsurl' => (new \moodle_url('/course/edit.php', ['id' => $course->id]))->out(false),
             'sections' => array_values($sections),
             'leftmenu' => $leftmenu,
             'style' => $format->get_tab_style(),
@@ -243,6 +271,7 @@ class content extends content_topics {
                 'active' => false,
                 'hidden' => false,
                 'unavailable' => false,
+                'complete' => false,
             ];
             if ($definition['url'] !== '') {
                 $tab['url'] = $definition['url'];
@@ -267,8 +296,145 @@ class content extends content_topics {
             $tab['active'] = (bool)array_filter($targets, fn($target) => $target['active']);
             $tab['unavailable'] = empty($available);
             $tab['hidden'] = !array_filter($targets, fn($target) => !$target['hidden']);
+            // Complete when every targeted section with tracked activities is complete (and there is one).
+            $tracked = array_filter($targets, fn($target) => $target['tracked']);
+            $tab['complete'] = $tracked && !array_filter($tracked, fn($target) => !$target['complete']);
             $tabs[] = $tab;
         }
         return $tabs;
+    }
+
+    /**
+     * Completion progress of the sections for the current user, subsections included in their section.
+     *
+     * Only the activities the user can access and whose completion is tracked are counted. Empty when the option is
+     * off, completion is disabled, or the user's completion is not tracked (teachers, guests).
+     *
+     * @return array by section id: ['done' => int, 'total' => int, 'complete' => bool]
+     */
+    protected function get_progress(): array {
+        global $CFG, $USER;
+        if ($this->progress !== null) {
+            return $this->progress;
+        }
+        $this->progress = [];
+        $format = $this->format;
+        $course = $format->get_course();
+        if (empty($course->gtabsprogress)) {
+            return $this->progress;
+        }
+        require_once($CFG->libdir . '/completionlib.php');
+        $completion = new \completion_info($course);
+        if (!$completion->is_enabled() || !$completion->is_tracked_user($USER->id)) {
+            return $this->progress;
+        }
+        $modinfo = $format->get_modinfo();
+
+        // Own activities of every section (a subsection is counted through its delegated section).
+        $own = [];
+        $delegatedby = [];
+        foreach ($modinfo->get_section_info_all() as $section) {
+            $counts = ['done' => 0, 'total' => 0];
+            foreach ($modinfo->sections[$section->section] ?? [] as $cmid) {
+                $cm = $modinfo->get_cm($cmid);
+                if ($delegated = $cm->get_delegated_section_info()) {
+                    if ($cm->uservisible) {
+                        $delegatedby[$section->id][] = $delegated->id;
+                    }
+                    continue;
+                }
+                if (!$cm->uservisible || $cm->completion == COMPLETION_TRACKING_NONE) {
+                    continue;
+                }
+                $counts['total']++;
+                $state = $completion->get_data($cm, true, $USER->id)->completionstate;
+                if ($state == COMPLETION_COMPLETE || $state == COMPLETION_COMPLETE_PASS) {
+                    $counts['done']++;
+                }
+            }
+            $own[$section->id] = $counts;
+        }
+        foreach ($own as $sectionid => $counts) {
+            foreach ($delegatedby[$sectionid] ?? [] as $childid) {
+                $counts['done'] += $own[$childid]['done'] ?? 0;
+                $counts['total'] += $own[$childid]['total'] ?? 0;
+            }
+            $counts['complete'] = $counts['total'] > 0 && $counts['done'] === $counts['total'];
+            $this->progress[$sectionid] = $counts;
+        }
+        return $this->progress;
+    }
+
+    /**
+     * Whether "Resume where I left off" applies to the current user in this course.
+     *
+     * @return bool
+     */
+    protected function resume_enabled(): bool {
+        $course = $this->format->get_course();
+        return !empty($course->gtabsresume) && isloggedin() && !isguestuser();
+    }
+
+    /**
+     * Remember the section displayed on this page as the last one the user consulted in the course.
+     */
+    protected function remember_section(): void {
+        $format = $this->format;
+        $sectionnum = $format->get_sectionnum();
+        if (!$sectionnum || !$this->resume_enabled()) {
+            return;
+        }
+        $section = $format->get_modinfo()->get_section_info($sectionnum);
+        if (!$section || !$section->uservisible || $section->get_component_instance()) {
+            return;
+        }
+        $name = 'format_sectiontabs_last_' . $format->get_courseid();
+        if ((int)get_user_preferences($name, 0) !== (int)$section->id) {
+            set_user_preference($name, $section->id);
+        }
+    }
+
+    /**
+     * "Resume where I left off" link on the course home: last section consulted, and its last subsection opened.
+     *
+     * @return array|null
+     */
+    protected function export_resume(): ?array {
+        $format = $this->format;
+        $sectionnum = $format->get_sectionnum();
+        if (($sectionnum !== null && $sectionnum !== 0) || !$this->resume_enabled() || $format->show_editor()) {
+            return null;
+        }
+        $courseid = $format->get_courseid();
+        $modinfo = $format->get_modinfo();
+        $canviewhidden = has_capability('moodle/course:viewhiddensections', $format->get_context());
+        $section = $modinfo->get_section_info_by_id(
+            (int)get_user_preferences('format_sectiontabs_last_' . $courseid, 0),
+            IGNORE_MISSING
+        );
+        if (
+            !$section || !$section->section || !$section->uservisible || $section->get_component_instance()
+                || (!$section->visible && !$canviewhidden)
+        ) {
+            return null;
+        }
+        $url = $format->get_tab_url($section);
+        $subname = null;
+        $cmid = (int)get_user_preferences('format_sectiontabs_lastsub_' . $courseid, 0);
+        $cms = $modinfo->get_cms();
+        if ($cmid && isset($cms[$cmid])) {
+            $cm = $cms[$cmid];
+            $delegated = $cm->get_delegated_section_info();
+            if ($delegated && $cm->uservisible && (int)$cm->sectionnum === (int)$section->section) {
+                $subname = html_entity_decode(strip_tags($format->get_section_name($delegated)), ENT_QUOTES, 'UTF-8');
+                $url->set_anchor('module-' . $cm->id);
+            }
+        }
+        return [
+            'url' => $url->out(false),
+            'sectionname' => html_entity_decode(strip_tags($format->get_section_name($section)), ENT_QUOTES, 'UTF-8'),
+            'subname' => $subname,
+            'style' => $format->get_tab_style(),
+        ];
     }
 }
