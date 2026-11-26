@@ -129,3 +129,4 @@ Il refuse de republier une version existante.
 ## Licence
 
 GNU GPL v3 ou ultérieure.
+
