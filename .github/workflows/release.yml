@@ -26,18 +26,17 @@ jobs:
   release:
     name: Publier la release
     needs: checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Installer PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          coverage: none
+      # PHP 8.3 et Composer sont préinstallés sur ubuntu-24.04 : seule une action publiée par GitHub
+      # (actions/checkout) est utilisée, ce qui fonctionne aussi quand le dépôt n'autorise que celles-ci.
+      - name: Version de PHP
+        run: php --version && composer --version
 
       - name: Numéro de version et étiquette
         id: version

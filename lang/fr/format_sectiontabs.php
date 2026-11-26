@@ -25,15 +25,15 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['activeborder'] = 'Couleur du soulignement de l\'onglet actif';
-$string['activeborder_desc'] = 'Couleur du trait sous l\'onglet actif.';
+$string['activeborder_desc'] = 'Couleur du trait sous l\'onglet actif, pour tous les cours qui n\'en définissent pas. Vide : la couleur de l\'onglet actif, assombrie.';
 $string['activecolor'] = 'Couleur de l\'onglet actif';
-$string['activecolor_desc'] = 'Couleur de fond par défaut de l\'onglet de la section affichée. Chaque cours peut définir sa propre couleur.';
+$string['activecolor_desc'] = 'Couleur de l\'onglet de la section affichée, pour tous les cours qui n\'en définissent pas. Vide : la couleur principale du thème (actuellement {$a}) ; avec le thème Épure, sa couleur de marque, qui suit aussi son mode sombre, ses préférences d\'affichage et les couleurs des entreprises. La couleur du texte est choisie automatiquement pour rester lisible.';
 $string['currentsection'] = 'Section en cours';
 $string['customtabs_intro'] = 'Un bloc par onglet, dans l\'ordre de la barre : son nom, puis les sections qu\'il ouvre (ou une adresse web). Un onglet peut regrouper plusieurs sections : il ouvre la première accessible et reste en surbrillance sur chacune d\'elles. Pour supprimer un onglet, videz son nom. Pour en ajouter, remplissez les blocs vides à la fin (enregistrez pour en obtenir d\'autres). Renommer une section ne casse pas les onglets.';
 $string['gtabsactiveborder'] = 'Couleur du soulignement de l\'onglet actif';
-$string['gtabsactiveborder_help'] = 'Couleur du trait sous l\'onglet actif, sous forme de code hexadécimal (par exemple #2b1a10). Laisser vide pour utiliser la couleur définie pour le site.';
+$string['gtabsactiveborder_help'] = 'Couleur du trait sous l\'onglet actif, sous forme de code hexadécimal (par exemple #1d3f75). Vide : la couleur définie pour le site, sinon la couleur de l\'onglet actif, assombrie.';
 $string['gtabsactivecolor'] = 'Couleur de l\'onglet actif';
-$string['gtabsactivecolor_help'] = 'Couleur de fond de l\'onglet de la section affichée, sous forme de code hexadécimal (par exemple #ecb21e). Laisser vide pour utiliser la couleur définie pour le site.';
+$string['gtabsactivecolor_help'] = 'Couleur de l\'onglet de la section affichée, sous forme de code hexadécimal (par exemple #2559a8). Vide : la couleur définie pour le site, sinon la couleur principale du thème (avec Épure, sa couleur de marque). La couleur du texte est choisie automatiquement pour rester lisible.';
 $string['gtabshome'] = 'L\'accueil du cours n\'affiche que la section générale';
 $string['gtabshome_help'] = 'Si cette option est activée, la page d\'accueil du cours n\'affiche que la section générale, comme un format « une section par onglet ». Chaque autre section s\'affiche sur sa propre page. En mode édition, la liste complète des sections reste affichée pour pouvoir ajouter et déplacer des sections.';
 $string['gtabsleftmenu'] = 'Menu des sections à gauche';
@@ -87,3 +87,4 @@ $string['tabtarget_required'] = 'Choisissez au moins une section, ou saisissez u
 $string['taburl'] = 'Ou adresse web';
 $string['taburl_help'] = 'À la place de sections, l\'onglet peut ouvrir une adresse web (commençant par http:// ou https://). Elle s\'ouvre dans une nouvelle fenêtre.';
 $string['taburl_invalid'] = 'Saisissez une adresse web commençant par http:// ou https://.';
+$string['themecolour_placeholder'] = 'Couleur du thème';

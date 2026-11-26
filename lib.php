@@ -42,6 +42,9 @@ class format_sectiontabs extends format_topics {
     /** @var int Tabs defined by the teacher. */
     public const TABS_CUSTOM = 1;
 
+    /** @var string Primary colour of Moodle (Boost, Classic) when the theme sets none. */
+    public const DEFAULT_THEME_COLOUR = '#0f6cbf';
+
     /** @var int Number of empty tab blocks offered in the course form to add tabs. */
     public const EMPTY_TAB_BLOCKS = 3;
 
@@ -136,14 +139,15 @@ class format_sectiontabs extends format_topics {
                 'help_component' => 'format_sectiontabs',
                 'element_type' => 'advcheckbox',
             ];
-            foreach (['gtabsactivecolor' => '#ecb21e', 'gtabsactiveborder' => '#2b1a10'] as $name => $placeholder) {
+            $placeholder = get_string('themecolour_placeholder', 'format_sectiontabs');
+            foreach (['gtabsactivecolor', 'gtabsactiveborder'] as $name) {
                 $options[$name] += [
                     'label' => new lang_string($name, 'format_sectiontabs'),
                     'help' => $name,
                     'help_component' => 'format_sectiontabs',
                     'element_type' => 'text',
                     'element_attributes' => [
-                        ['size' => 10, 'maxlength' => 7, 'placeholder' => $placeholder],
+                        ['size' => 18, 'maxlength' => 7, 'placeholder' => $placeholder],
                     ],
                 ];
             }
@@ -438,7 +442,7 @@ class format_sectiontabs extends format_topics {
      * @return string
      */
     public static function get_text_colour_for(string $background): string {
-        $hex = ltrim(self::clean_colour($background) ?? '#ecb21e', '#');
+        $hex = ltrim(self::clean_colour($background) ?? self::DEFAULT_THEME_COLOUR, '#');
         if (strlen($hex) === 3) {
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
         }
@@ -460,27 +464,55 @@ class format_sectiontabs extends format_topics {
     /**
      * CSS custom properties of the tab colours.
      *
+     * --gtabs-theme(-text): main colour of the theme of the page and its readable text, the default.
+     * --gtabs-active(-text) and --gtabs-active-border: only when a colour is set for the course or the site.
+     * With Épure, styles.css prefers its brand colours (--epure-brand, --epure-on-brand) to --gtabs-theme:
+     * they follow its dark mode, display preferences and company colours.
+     *
      * @return string
      */
     public function get_tab_style(): string {
-        $active = $this->get_tab_colour('activecolor');
-        return '--gtabs-active:' . $active .
-            ';--gtabs-active-text:' . self::get_text_colour_for($active) .
-            ';--gtabs-active-border:' . $this->get_tab_colour('activeborder') . ';';
+        $theme = self::get_theme_colour();
+        $style = '--gtabs-theme:' . $theme . ';--gtabs-theme-text:' . self::get_text_colour_for($theme) . ';';
+        if ($active = $this->get_tab_colour('activecolor')) {
+            $style .= '--gtabs-active:' . $active . ';--gtabs-active-text:' . self::get_text_colour_for($active) . ';';
+        }
+        if ($border = $this->get_tab_colour('activeborder')) {
+            $style .= '--gtabs-active-border:' . $border . ';';
+        }
+        return $style;
     }
 
     /**
-     * Colour of a tab element: the course setting, else the site setting, else the default.
+     * Colour set for a tab element: the course setting, else the site setting, else null (theme colours).
      *
      * @param string $name 'activecolor' or 'activeborder'
-     * @return string
+     * @return string|null
      */
-    public function get_tab_colour(string $name): string {
-        $defaults = ['activecolor' => '#ecb21e', 'activeborder' => '#2b1a10'];
+    public function get_tab_colour(string $name): ?string {
         $course = $this->get_course();
         return self::clean_colour($course->{'gtabs' . $name} ?? null)
-            ?? self::clean_colour(get_config('format_sectiontabs', $name))
-            ?? $defaults[$name];
+            ?? self::clean_colour(get_config('format_sectiontabs', $name));
+    }
+
+    /**
+     * Main colour of the theme of the page: its "brandcolor" setting (Boost, Moove, Classic, Épure...), or the one
+     * of a parent theme, else the default primary colour of Moodle.
+     *
+     * @return string hexadecimal colour
+     */
+    public static function get_theme_colour(): string {
+        global $PAGE;
+        $names = [];
+        if (!empty($PAGE) && $PAGE->theme) {
+            $names = array_merge([$PAGE->theme->name], $PAGE->theme->parents ?? []);
+        }
+        foreach ($names as $name) {
+            if ($colour = self::clean_colour(get_config('theme_' . $name, 'brandcolor'))) {
+                return $colour;
+            }
+        }
+        return self::DEFAULT_THEME_COLOUR;
     }
 
     /**

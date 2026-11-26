@@ -1,5 +1,5 @@
 # Contrôles du plugin : syntaxe PHP, règles de code Moodle (moodle-cs), cohérence des fichiers de langue.
-# Lancé à chaque push et pull request, et appelé par le workflow de release avant de publier.
+# Lancé à chaque push et pull request, à la main (Run workflow), et appelé par le workflow de release avant de publier.
 name: CI
 
 on:
@@ -7,6 +7,8 @@ on:
     branches: ['**']
   pull_request:
   workflow_call:
+  # Lancement à la main : Actions > CI > Run workflow.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,17 +16,15 @@ permissions:
 jobs:
   checks:
     name: Contrôles
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
 
-      - name: Installer PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          tools: composer
-          coverage: none
+      # PHP 8.3 et Composer sont préinstallés sur ubuntu-24.04 : seule une action publiée par GitHub
+      # (actions/checkout) est utilisée, ce qui fonctionne aussi quand le dépôt n'autorise que celles-ci.
+      - name: Version de PHP
+        run: php --version && composer --version
 
       - name: Syntaxe PHP
         run: |

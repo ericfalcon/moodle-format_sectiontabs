@@ -25,15 +25,15 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['activeborder'] = 'Active tab underline colour';
-$string['activeborder_desc'] = 'Colour of the line under the active tab.';
+$string['activeborder_desc'] = 'Colour of the line under the active tab, for every course that does not set its own. Empty: the colour of the active tab, darkened.';
 $string['activecolor'] = 'Active tab colour';
-$string['activecolor_desc'] = 'Default background colour of the tab of the section being displayed. Each course can set its own colour.';
+$string['activecolor_desc'] = 'Colour of the tab of the displayed section, for every course that does not set its own. Empty: the main colour of the theme (currently {$a}); with the Épure theme, its brand colour, which also follows its dark mode, display preferences and company colours. The text colour is chosen automatically to stay readable.';
 $string['currentsection'] = 'Current section';
 $string['customtabs_intro'] = 'One block per tab, in the order of the tab bar: its name, then the sections it opens (or a web address). A tab can group several sections: it opens the first one the user can access and stays highlighted on each of them. To delete a tab, empty its name. To add tabs, fill the empty blocks at the end (save to get more). Renaming a section does not break the tabs.';
 $string['gtabsactiveborder'] = 'Active tab underline colour';
-$string['gtabsactiveborder_help'] = 'Colour of the line under the active tab, as a hexadecimal code (for example #2b1a10). Leave empty to use the site colour.';
+$string['gtabsactiveborder_help'] = 'Colour of the line under the active tab, as a hexadecimal code (for example #1d3f75). Empty: the colour set for the site, else the colour of the active tab, darkened.';
 $string['gtabsactivecolor'] = 'Active tab colour';
-$string['gtabsactivecolor_help'] = 'Background colour of the tab of the section being displayed, as a hexadecimal code (for example #ecb21e). Leave empty to use the site colour.';
+$string['gtabsactivecolor_help'] = 'Colour of the tab of the displayed section, as a hexadecimal code (for example #2559a8). Empty: the colour set for the site, else the main colour of the theme (with Épure, its brand colour). The text colour is chosen automatically to stay readable.';
 $string['gtabshome'] = 'Course home shows only the general section';
 $string['gtabshome_help'] = 'If enabled, the course home page only displays the general section, like a "one section per tab" format. Each other section is displayed on its own page. In editing mode the full list of sections is still displayed so that sections can be added and moved.';
 $string['gtabsleftmenu'] = 'Section menu on the left';
@@ -87,3 +87,4 @@ $string['tabtarget_required'] = 'Choose at least one section, or enter a web add
 $string['taburl'] = 'Or web address';
 $string['taburl_help'] = 'Instead of sections, the tab can open a web address (starting with http:// or https://). It opens in a new window.';
 $string['taburl_invalid'] = 'Enter a web address starting with http:// or https://.';
+$string['themecolour_placeholder'] = 'Theme colour';
