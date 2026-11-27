@@ -405,36 +405,12 @@ class content extends content_topics {
         if (($sectionnum !== null && $sectionnum !== 0) || !$this->resume_enabled() || $format->show_editor()) {
             return null;
         }
-        $courseid = $format->get_courseid();
-        $modinfo = $format->get_modinfo();
-        $canviewhidden = has_capability('moodle/course:viewhiddensections', $format->get_context());
-        $section = $modinfo->get_section_info_by_id(
-            (int)get_user_preferences('format_sectiontabs_last_' . $courseid, 0),
-            IGNORE_MISSING
-        );
-        if (
-            !$section || !$section->section || !$section->uservisible || $section->get_component_instance()
-                || (!$section->visible && !$canviewhidden)
-        ) {
+        $resume = $format->get_resume();
+        if (!$resume) {
             return null;
         }
-        $url = $format->get_tab_url($section);
-        $subname = null;
-        $cmid = (int)get_user_preferences('format_sectiontabs_lastsub_' . $courseid, 0);
-        $cms = $modinfo->get_cms();
-        if ($cmid && isset($cms[$cmid])) {
-            $cm = $cms[$cmid];
-            $delegated = $cm->get_delegated_section_info();
-            if ($delegated && $cm->uservisible && (int)$cm->sectionnum === (int)$section->section) {
-                $subname = html_entity_decode(strip_tags($format->get_section_name($delegated)), ENT_QUOTES, 'UTF-8');
-                $url->set_anchor('module-' . $cm->id);
-            }
-        }
-        return [
-            'url' => $url->out(false),
-            'sectionname' => html_entity_decode(strip_tags($format->get_section_name($section)), ENT_QUOTES, 'UTF-8'),
-            'subname' => $subname,
-            'style' => $format->get_tab_style(),
-        ];
+        $resume['url'] = $resume['url']->out(false);
+        $resume['style'] = $format->get_tab_style();
+        return $resume;
     }
 }

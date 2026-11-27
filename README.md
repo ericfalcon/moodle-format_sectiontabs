@@ -1,6 +1,6 @@
 # Onglets et menu de sections (format_sectiontabs)
 
-**Version 1.3 (stable)** — Moodle 4.5 à 5.3. Voir [CHANGES.md](CHANGES.md).
+**Version 1.4 (stable)** — Moodle 4.5 à 5.3. Voir [CHANGES.md](CHANGES.md).
 
 Format de cours Moodle qui reprend le format standard **Sections** (`format_topics`) et ajoute
 au-dessus de chaque page du cours une **barre d'onglets automatique** donnant accès à toutes les sections,
@@ -75,6 +75,18 @@ Une coche ✓ s'affiche sur un onglet personnalisé quand toutes les activités 
   l'accueil du cours).
 - Après l'ajout ou la modification d'une sous-section, son onglet s'ouvre automatiquement.
 - L'onglet **Tout afficher** des sous-sections montre toutes les sous-sections pour les déplacer.
+
+## Avec le thème Épure
+
+Le format et le thème Épure sont conçus ensemble :
+
+- les onglets reprennent les couleurs, arrondis, bordures et focus d'Épure, en mode clair comme en mode sombre ;
+- le bouton **Continuer** du tableau de bord d'Épure mène, quand aucune activité à continuer n'est connue (achèvement
+  désactivé), à la dernière section et sous-section consultées ;
+- sur téléphone, la barre de navigation d'Épure propose les boutons **Précédent / Suivant** du format, à portée de pouce.
+
+Pour un thème, `course_get_format($course)->get_resume($userid)` renvoie la reprise d'un utilisateur (adresse, nom de
+la section et de la sous-section), ou `null`.
 
 ## Personnalisation
 
