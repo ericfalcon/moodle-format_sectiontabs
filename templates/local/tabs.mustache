@@ -22,6 +22,9 @@
     Example context (json):
     {
         "style": "--gtabs-active:#ecb21e;--gtabs-active-border:#2b1a10;",
+        "hasorphans": true,
+        "settingsurl": "#",
+        "orphans": [{"name": "Section 5", "url": "#", "last": true}],
         "tabs": [
             {"name": "Accueil", "title": "Accueil", "url": "#", "active": true},
             {"name": "Bloc 1", "title": "Bloc 1 : Actes essentiels", "url": "#", "hidden": true},
@@ -34,12 +37,28 @@
         {{#tabs}}
         <li class="gtabs-item">
             {{#unavailable}}
-            <span class="gtabs-tab gtabs-unavailable{{#active}} gtabs-active{{/active}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}>{{{name}}}<span class="gtabs-sr"> ({{#str}} notavailable, format_sectiontabs {{/str}})</span></span>
+            <span class="gtabs-tab gtabs-unavailable{{#active}} gtabs-active{{/active}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}>{{#complete}}<span class="gtabs-check" aria-hidden="true">✓</span>{{/complete}}{{{name}}}{{#complete}}<span class="gtabs-sr"> ({{#str}} completed, format_sectiontabs {{/str}})</span>{{/complete}}<span class="gtabs-sr"> ({{#str}} notavailable, format_sectiontabs {{/str}})</span></span>
             {{/unavailable}}
             {{^unavailable}}
-            <a class="gtabs-tab{{#active}} gtabs-active{{/active}}{{#hidden}} gtabs-hidden{{/hidden}}" href="{{url}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}{{#external}} target="_blank" rel="noopener noreferrer"{{/external}}>{{{name}}}{{#hidden}}<span class="gtabs-sr"> ({{#str}} hiddenfromstudents, format_sectiontabs {{/str}})</span>{{/hidden}}{{#external}}<span class="gtabs-sr"> ({{#str}} opensinnewwindow, format_sectiontabs {{/str}})</span>{{/external}}</a>
+            <a class="gtabs-tab{{#active}} gtabs-active{{/active}}{{#hidden}} gtabs-hidden{{/hidden}}" href="{{url}}" title="{{title}}"{{#active}} aria-current="page"{{/active}}{{#external}} target="_blank" rel="noopener noreferrer"{{/external}}>{{#complete}}<span class="gtabs-check" aria-hidden="true">✓</span>{{/complete}}{{{name}}}{{#complete}}<span class="gtabs-sr"> ({{#str}} completed, format_sectiontabs {{/str}})</span>{{/complete}}{{#hidden}}<span class="gtabs-sr"> ({{#str}} hiddenfromstudents, format_sectiontabs {{/str}})</span>{{/hidden}}{{#external}}<span class="gtabs-sr"> ({{#str}} opensinnewwindow, format_sectiontabs {{/str}})</span>{{/external}}</a>
             {{/unavailable}}
         </li>
         {{/tabs}}
     </ul>
 </nav>
+{{#hasorphans}}
+<div class="gtabs-orphans alert alert-warning" role="status">
+    {{#str}} sectionswithouttab_editing, format_sectiontabs {{/str}}
+    {{#orphans}}<a href="{{url}}">{{{name}}}</a>{{^last}}, {{/last}}{{/orphans}}.
+    <a href="{{settingsurl}}">{{#str}} sectionswithouttab_settings, format_sectiontabs {{/str}}</a>
+</div>
+{{/hasorphans}}
+{{#js}}
+// On a phone the tab bar scrolls horizontally: bring the active tab into view.
+document.querySelectorAll('.gtabs .gtabs-list').forEach(function(list) {
+    var active = list.querySelector('.gtabs-active');
+    if (active && list.scrollWidth > list.clientWidth) {
+        list.scrollLeft = active.offsetLeft - list.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+    }
+});
+{{/js}}

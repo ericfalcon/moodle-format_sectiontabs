@@ -1,4 +1,5 @@
-# Contrôles du plugin : syntaxe PHP, règles de code Moodle (moodle-cs), cohérence des fichiers de langue.
+# Contrôles du plugin : syntaxe PHP, règles de code Moodle (moodle-cs), cohérence des fichiers de langue,
+# puis tests automatiques PHPUnit et Behat sur Moodle 4.5 et 5.3.
 # Lancé à chaque push et pull request, à la main (Run workflow), et appelé par le workflow de release avant de publier.
 name: CI
 
@@ -19,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Récupérer le code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # PHP 8.3 et Composer sont préinstallés sur ubuntu-24.04 : seule une action publiée par GitHub
       # (actions/checkout) est utilisée, ce qui fonctionne aussi quand le dépôt n'autorise que celles-ci.
@@ -44,4 +45,66 @@ jobs:
 
       - name: Version et fichiers de langue
         run: php .github/scripts/check.php
+
+
+  moodle:
+    name: Tests Moodle ${{ matrix.moodle }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - moodle: '4.5'
+            branch: MOODLE_405_STABLE
+            postgres: '16'
+          - moodle: '5.3'
+            branch: MOODLE_503_STABLE
+            postgres: '17'
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v5
+        with:
+          path: plugin
+
+      # PHP préinstallé : Moodle demande max_input_vars >= 5000 ; xdebug ralentirait les tests.
+      - name: Réglages PHP
+        run: |
+          echo 'max_input_vars=5000' | sudo tee /etc/php/8.3/cli/conf.d/99-moodle.ini
+          sudo phpdismod -v 8.3 xdebug || true
+          php --version
+          php -m | grep -iE 'pgsql|intl|zip|gd|soap|sodium' | tr '\n' ' '
+
+      # moodle-plugin-ci (MoodleHQ) installe Moodle, la base de test et le navigateur de Behat (Selenium, via Docker).
+      - name: Installer moodle-plugin-ci
+        run: |
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
+          echo "$(cd ci/bin; pwd)" >> "$GITHUB_PATH"
+          echo "$(cd ci/vendor/bin; pwd)" >> "$GITHUB_PATH"
+          sudo locale-gen en_AU.UTF-8
+
+      - name: Installer Moodle ${{ matrix.moodle }} et le plugin
+        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
+        env:
+          DB: pgsql
+          MOODLE_BRANCH: ${{ matrix.branch }}
+
+      - name: Tests PHPUnit
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpunit --fail-on-warning
+
+      - name: Tests Behat (navigateur)
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci behat --profile chrome
 

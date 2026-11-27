@@ -1,5 +1,19 @@
 # Historique des versions
 
+## 1.3 (stable) — 26 novembre 2026
+
+- **Téléphone** : la barre d'onglets tient sur une ligne qui défile au doigt, l'onglet actif ramené à l'écran
+  (aussi pour les sous-onglets).
+- **Sections sans onglet** : en onglets personnalisés, les sections qu'aucun onglet n'ouvre sont signalées aux
+  enseignants, dans les paramètres du cours et en mode édition au-dessus des onglets.
+- **Avancement** : une coche ✓ marque les onglets, les entrées du menu et les sous-onglets dont toutes les activités
+  suivies sont terminées (option « Avancement dans les onglets », activée par défaut).
+- **« Reprendre où j'en étais »** : sur l'accueil du cours, un bouton ramène l'étudiant à la dernière section et
+  sous-section consultées (option activée par défaut ; préférences déclarées à l'API de confidentialité).
+- Moodle 4.5 : en « une section par page », les sous-sections affichaient un résumé (nombre d'activités) au lieu de
+  leurs activités ; elles affichent désormais leurs activités, comme sur Moodle 5.
+- **Tests automatiques** PHPUnit et Behat, lancés par la CI sur Moodle 4.5 et 5.3.
+
 ## 1.2 (stable) — 26 novembre 2026
 
 - **Couleur de l'onglet actif reprise du thème par défaut**, toujours modifiable pour le site et pour chaque cours.

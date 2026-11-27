@@ -51,6 +51,9 @@
         {{> format_sectiontabs/local/sidemenu }}
     {{/gtabs}}
     <div class="gtabs-main">
+        {{#gresume}}
+            {{> format_sectiontabs/local/resume }}
+        {{/gresume}}
         {{#gsubtabs}}
             {{> format_sectiontabs/local/subtabs }}
         {{/gsubtabs}}
@@ -68,6 +71,9 @@
 </div>
 {{/gtabs.leftmenu}}
 {{^gtabs.leftmenu}}
+    {{#gresume}}
+        {{> format_sectiontabs/local/resume }}
+    {{/gresume}}
     {{#gsubtabs}}
         {{> format_sectiontabs/local/subtabs }}
     {{/gsubtabs}}

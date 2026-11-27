@@ -231,6 +231,27 @@
     .gtabs-layout .gtabs-side {
         display: none;
     }
+    /* Téléphone : onglets et sous-onglets sur une seule ligne qui défile horizontalement
+     * (l'onglet actif est ramené dans la zone visible par le script de la barre). */
+    .gtabs .gtabs-list,
+    .gsubtabs .gsubtabs-list {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px;
+    }
+    .gtabs .gtabs-item,
+    .gsubtabs .gsubtabs-item {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+    .gsubtabs .gsubtabs-tab {
+        white-space: nowrap;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -296,4 +317,58 @@
     outline: 3px solid var(--epure-focus, var(--bs-link-color, #0f6cbf));
     outline-offset: 2px;
     box-shadow: 0 0 0 5px var(--bs-body-bg, #fff);
+}
+
+/* Avancement : coche des sections terminées (toutes les activités suivies achevées).
+ * Couleur d'accent d'Épure (sections terminées du thème), sinon couleur « succès » de Bootstrap. */
+.gtabs .gtabs-check,
+.gtabs-side .gtabs-check,
+.gsubtabs .gtabs-check {
+    display: inline-block;
+    margin-right: .35em;
+    font-weight: 700;
+    color: var(--epure-accent, var(--bs-success, #146c43));
+}
+
+.gtabs .gtabs-active .gtabs-check,
+.gsubtabs .gsubtabs-active .gtabs-check {
+    color: inherit;
+}
+
+/* « Reprendre où j'en étais », sur l'accueil du cours. */
+.gresume {
+    margin: 0 0 1rem 0;
+}
+
+.gresume .gresume-link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .75rem;
+    padding: .75rem 1rem;
+    border-radius: var(--epure-radius, 10px);
+    border-left: 4px solid var(--gtabs-active, var(--epure-brand, var(--gtabs-theme, #0f6cbf)));
+    background-color: var(--epure-brand-soft, var(--bs-tertiary-bg, #f3f1f0));
+    color: var(--epure-ink, var(--bs-body-color, #1d2125)) !important;
+    text-decoration: none;
+}
+
+.gresume .gresume-link:hover,
+.gresume .gresume-link:focus {
+    background-color: var(--epure-brand-soft-2, var(--bs-secondary-bg, #e9e5e3));
+    text-decoration: none;
+}
+
+.gresume .gresume-kind {
+    font-weight: 700;
+}
+
+.gresume .gresume-name {
+    flex: 1 1 auto;
+    text-decoration: underline;
+}
+
+.gresume .gresume-link:focus-visible {
+    outline: 3px solid var(--epure-focus, var(--bs-link-color, #0f6cbf));
+    outline-offset: 2px;
 }

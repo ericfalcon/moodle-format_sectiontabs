@@ -23,6 +23,8 @@
     {
         "uniqid": "gsubtabs1",
         "sectionid": 42,
+        "courseid": 7,
+        "resume": true,
         "style": "--gtabs-active:#ecb21e;",
         "subtabs": [
             {"cmid": 10, "num": 12, "name": "Classe virtuelle", "title": "Classe virtuelle", "active": true},
@@ -32,14 +34,14 @@
         "editing": true
     }
 }}
-<div id="{{uniqid}}" class="gsubtabs" style="{{style}}" data-sectionid="{{sectionid}}">
+<div id="{{uniqid}}" class="gsubtabs" style="{{style}}" data-sectionid="{{sectionid}}" data-courseid="{{courseid}}"{{#resume}} data-resume="1"{{/resume}}>
     <ul class="gsubtabs-list" role="tablist" aria-label="{{#str}} subtabsnav, format_sectiontabs {{/str}}">
         {{#subtabs}}
         <li class="gsubtabs-item" role="presentation">
             <a class="gsubtabs-tab{{#active}} gsubtabs-active{{/active}}{{#hidden}} gtabs-hidden{{/hidden}}{{#unavailable}} gsubtabs-unavailable{{/unavailable}}"
                id="{{uniqid}}-tab-{{cmid}}" href="#section-{{num}}" role="tab" aria-controls="module-{{cmid}}"
                aria-selected="{{#active}}true{{/active}}{{^active}}false{{/active}}" tabindex="{{#active}}0{{/active}}{{^active}}-1{{/active}}"
-               title="{{title}}" data-gsubtab="{{cmid}}" data-num="{{num}}">{{{name}}}{{#hidden}}<span class="gtabs-sr"> ({{#str}} hiddenfromstudents, format_sectiontabs {{/str}})</span>{{/hidden}}{{#unavailable}}<span class="gtabs-sr"> ({{#str}} notavailable, format_sectiontabs {{/str}})</span>{{/unavailable}}</a>
+               title="{{title}}" data-gsubtab="{{cmid}}" data-num="{{num}}">{{#complete}}<span class="gtabs-check" aria-hidden="true">✓</span>{{/complete}}{{{name}}}{{#complete}}<span class="gtabs-sr"> ({{#str}} completed, format_sectiontabs {{/str}})</span>{{/complete}}{{#hidden}}<span class="gtabs-sr"> ({{#str}} hiddenfromstudents, format_sectiontabs {{/str}})</span>{{/hidden}}{{#unavailable}}<span class="gtabs-sr"> ({{#str}} notavailable, format_sectiontabs {{/str}})</span>{{/unavailable}}</a>
         </li>
         {{/subtabs}}
         {{#editing}}
@@ -92,6 +94,11 @@
             }
         });
         rules.textContent = hidden.length ? hidden.join(',') + '{display:none !important;}' : '';
+        // On a phone the subtabs scroll horizontally: keep the selected one in view.
+        var list = root.querySelector('.gsubtabs-list');
+        if (list && list.scrollWidth > list.clientWidth && tab.dataset.gsubtab !== 'all') {
+            list.scrollLeft = tab.offsetLeft - list.offsetLeft - (list.clientWidth - tab.offsetWidth) / 2;
+        }
         if (tab.dataset.gsubtab !== 'all') {
             save('last', tab.dataset.gsubtab);
         }
@@ -138,6 +145,15 @@
     };
     var select = function(tab, focus) {
         show(tab);
+        // "Resume where I left off": remember the subsection the user opened (user preference, any device).
+        if (root.dataset.resume && tab.dataset.gsubtab !== 'all') {
+            require(['core_user/repository'], function(repository) {
+                repository.setUserPreference('format_sectiontabs_lastsub_' + root.dataset.courseid, tab.dataset.gsubtab)
+                    .catch(function() {
+                        // Not saved: the link to resume simply opens the section.
+                    });
+            });
+        }
         if (focus) {
             tab.focus();
         }
