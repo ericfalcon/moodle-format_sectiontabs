@@ -1,5 +1,12 @@
 # Historique des versions
 
+## 1.4 (stable) — 27 novembre 2026
+
+- **Intégration avec Épure** : la reprise (« Reprendre où j'en étais ») est lue par une fonction publique du format,
+  `get_resume()`, que le thème Épure utilise pour mener son bouton « Continuer » du tableau de bord à la dernière
+  section et sous-section consultées. Épure reprend aussi les boutons Précédent / Suivant dans sa barre de navigation
+  sur téléphone (Épure 1.56.0 et suivantes).
+
 ## 1.3 (stable) — 26 novembre 2026
 
 - **Téléphone** : la barre d'onglets tient sur une ligne qui défile au doigt, l'onglet actif ramené à l'écran

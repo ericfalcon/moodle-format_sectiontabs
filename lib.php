@@ -576,6 +576,54 @@ class format_sectiontabs extends format_topics {
     }
 
     /**
+     * Where a user left off in the course: the last section they consulted, and its last subsection opened.
+     *
+     * Used by the "Resume where I left off" button, and by themes (Épure leads its "Continue" button there).
+     * Null when the option is off, when nothing was consulted yet, or when the section is no longer available
+     * to the user.
+     *
+     * @param int|null $userid user, the current one by default
+     * @return array|null ['url' => moodle_url, 'sectionname' => string, 'subname' => string|null]
+     */
+    public function get_resume(?int $userid = null): ?array {
+        global $USER;
+        $userid = $userid ?: (int)$USER->id;
+        $course = $this->get_course();
+        if (empty($course->gtabsresume) || !$userid || isguestuser($userid)) {
+            return null;
+        }
+        $modinfo = get_fast_modinfo($course, $userid);
+        $section = $modinfo->get_section_info_by_id(
+            (int)get_user_preferences('format_sectiontabs_last_' . $course->id, 0, $userid),
+            IGNORE_MISSING
+        );
+        $canviewhidden = has_capability('moodle/course:viewhiddensections', $this->get_context(), $userid);
+        if (
+            !$section || !$section->section || !$section->uservisible || $section->get_component_instance()
+                || (!$section->visible && !$canviewhidden)
+        ) {
+            return null;
+        }
+        $url = $this->get_tab_url($section);
+        $subname = null;
+        $cmid = (int)get_user_preferences('format_sectiontabs_lastsub_' . $course->id, 0, $userid);
+        $cms = $modinfo->get_cms();
+        if ($cmid && isset($cms[$cmid])) {
+            $cm = $cms[$cmid];
+            $delegated = $cm->get_delegated_section_info();
+            if ($delegated && $cm->uservisible && (int)$cm->sectionnum === (int)$section->section) {
+                $subname = html_entity_decode(strip_tags($this->get_section_name($delegated)), ENT_QUOTES, 'UTF-8');
+                $url->set_anchor('module-' . $cm->id);
+            }
+        }
+        return [
+            'url' => $url,
+            'sectionname' => html_entity_decode(strip_tags($this->get_section_name($section)), ENT_QUOTES, 'UTF-8'),
+            'subname' => $subname,
+        ];
+    }
+
+    /**
      * URL of the tab of a section.
      *
      * @param section_info $section

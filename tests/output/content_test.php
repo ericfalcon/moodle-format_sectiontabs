@@ -243,6 +243,27 @@ final class content_test extends \advanced_testcase {
     }
 
     /**
+     * The place to resume, read for another user than the current one (as the dashboard of a theme does).
+     */
+    public function test_get_resume_for_another_user(): void {
+        $modinfo = get_fast_modinfo($this->course->id);
+        $key = '_' . $this->course->id;
+        set_user_preference('format_sectiontabs_last' . $key, $modinfo->get_section_info(1)->id, $this->student);
+        set_user_preference('format_sectiontabs_lastsub' . $key, $this->subcmids[1], $this->student);
+        $this->setAdminUser();
+
+        $resume = course_get_format($this->course->id)->get_resume((int)$this->student->id);
+        $this->assertSame('Bloc 1', $resume['sectionname']);
+        $this->assertSame('Exercices', $resume['subname']);
+        $this->assertStringEndsWith('#module-' . $this->subcmids[1], $resume['url']->out(false));
+        $this->assertNull(course_get_format($this->course->id)->get_resume(), 'Nothing consulted by the admin.');
+
+        // A section hidden from the student is not offered to them, even if the admin can see it.
+        set_user_preference('format_sectiontabs_last' . $key, $modinfo->get_section_info(2)->id, $this->student);
+        $this->assertNull(course_get_format($this->course->id)->get_resume((int)$this->student->id));
+    }
+
+    /**
      * The preference of the last subsection is declared for the browser, for this pattern only.
      */
     public function test_user_preference_definition(): void {
